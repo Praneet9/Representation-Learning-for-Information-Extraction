@@ -22,7 +22,7 @@ def get_data(xml_path):
             if len(element_objs) < 1:
                 continue
 
-            annotation_data = {'filepath': annot.stem, 'width': element_width,
+            annotation_data = {'filename': annot.stem, 'width': element_width,
                                'height': element_height, 'bboxes': []}
 
             for element_obj in element_objs:
