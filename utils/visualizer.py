@@ -9,7 +9,6 @@ def tesseract_ocr(image_path, ocr_path):
         ocr_data = json.load(f)
 
     empty_index = [i for i, ele in enumerate(ocr_data['text']) if ele == ""]
-    #sorted(empty_index, reverse=True)
     for key in ocr_data.keys():
         ocr_data[key] = [j for i, j in enumerate(ocr_data[key]) if i not in empty_index]
 
