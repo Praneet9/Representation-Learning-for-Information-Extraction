@@ -46,10 +46,11 @@ text = ' '.join([word['text'].strip() for word in all_words])
 
 def get_invoice_nums(all_words):
     inv_nums = []
-
+    invoice_no_re = r'(?=^[\d-]{5,}$)(?=[0-9]+)'
     for word in all_words:
         # boolean result for match success "VIGU"
         # result = bool(pattern, word['text'])
+        result = re.findall(invoice_no_re,word['text'])
         if result:
             inv_nums.append({
                 'text': word['text'],
