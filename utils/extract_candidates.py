@@ -1,8 +1,9 @@
 import json
 from stanfordcorenlp import StanfordCoreNLP
-import os
 import re
-# import cv2
+import os
+from glob import glob
+from tqdm import tqdm
 
 host = 'http://localhost'
 port = 9000
@@ -13,43 +14,15 @@ props = {
     'outputFormat': 'json'
 }
 
-invoice_date_candidates = []
-invoice_no_candidates = []
-total_amount_candidates = []
-
-# filename = '457667-obama-wo-9-18-invoice-13496234090062-_-pdfpage_1.jpg'
-# filename = '461396-priorities-usa-action-6278322-100912page_7.jpg'
-filename = '461396-priorities-usa-action-6278322-100912page_15.jpg'
-
-json_file = os.path.splitext(filename)[0] + '.json'
-
-output_path = 'dataset/tesseract_results/' + json_file
-image_path = 'dataset/praneet/' + filename
-
-with open(output_path, 'rb') as f:
-    data = json.load(f)
-
-# all_words = list(zip(data['text'], data['left'], data['top'], data['width'], data['height']))
-all_words = []
-
-for idx, word in enumerate(data['text']):
-    if word.strip() != "":
-        all_words.append({
-            'text': data['text'][idx],
-            'left': data['left'][idx],
-            'top': data['top'][idx],
-            'width': data['width'][idx],
-            'height': data['height'][idx]})
-
-text = ' '.join([word['text'].strip() for word in all_words])
-
 
 def get_invoice_nums(all_words):
     inv_nums = []
-    invoice_no_re = r'(?=^[\d-]{5,}$)(?=[0-9]+)'
+    invoice_no_re = r'^[0-9a-zA-Z-:]+$'
     for word in all_words:
-        # boolean result for match success "VIGU"
-        # result = bool(pattern, word['text'])
+        if not re.search('\d', word['text']):
+            continue
+        if len(word['text']) < 3:
+            continue
         result = re.findall(invoice_no_re,word['text'])
         if result:
             inv_nums.append({
@@ -135,15 +108,37 @@ def get_amounts(all_words):
     return amounts
 
 
-invoice_date_candidates = get_dates(text)
-total_amount_candidates = get_amounts(all_words)
-invoice_no_candidates = get_invoice_nums(all_words)
+tesseract_results = glob('../dataset/tesseract_results/*.json')
+if not os.path.exists('../dataset/candidates'):
+    os.mkdir('../dataset/candidates')
 
+for file in tqdm(tesseract_results):
+    output_path = '../dataset/candidates/' + os.path.basename(file)
+    with open(file, 'rb') as f:
+        data = json.load(f)
 
-# # Drawing candidates on image
-# img = cv2.imread(image_path)
-#
-# for i in total_amount_candidates:
-#     cv2.rectangle(img, (i['x1'], i['y1']), (i['x2'], i['y2']), (0, 0, 0), 5)
-#
-# cv2.imwrite('test.jpg', img)
+    all_words = []
+
+    for idx, word in enumerate(data['text']):
+        if word.strip() != "":
+            all_words.append({
+                'text': data['text'][idx],
+                'left': data['left'][idx],
+                'top': data['top'][idx],
+                'width': data['width'][idx],
+                'height': data['height'][idx]})
+
+    text = ' '.join([word['text'].strip() for word in all_words])
+
+    invoice_date_candidates = get_dates(text)
+    total_amount_candidates = get_amounts(all_words)
+    invoice_no_candidates = get_invoice_nums(all_words)
+
+    candidate_data = {
+        'invoice_number': invoice_no_candidates,
+        'invoice_date': invoice_date_candidates,
+        'total': total_amount_candidates
+    }
+
+    with open(output_path, 'w+') as f:
+        json.dump(candidate_data, f)
