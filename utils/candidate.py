@@ -1,11 +1,11 @@
 import json
 import traceback
 from utils import operations as op
-
+from tqdm import tqdm
 
 def attach_candidate(annotation, candidate_path):
 
-    for anno in annotation:
+    for anno in tqdm(annotation, desc='Attaching Candidate'):
         try:
             file_name = anno['filename']
             candidate_json = candidate_path / (file_name + ".json")

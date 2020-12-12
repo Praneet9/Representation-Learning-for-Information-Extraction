@@ -10,14 +10,13 @@ candidate_path = this_dir / "dataset" / "candidates"
 
 annotation, classes_count, class_mapping = xml_parser.get_data(xmls_path)
 annotation = candidate.attach_candidate(annotation, candidate_path)
+annotation = Neighbour.attach_neighbour(annotation, ocr_path)
 
 images = list(image_path.glob("*.jpg"))
 # for img in images:
 #     out_img = visualizer.tesseract_ocr(img, ocr_path / (img.stem + ".json"))
 #     cv2.imwrite('test.jpg', out_img)
 #     break
-
-annotation = Neighbour.attach_neighbour(annotation, ocr_path)
 
 print()
 

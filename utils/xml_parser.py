@@ -1,6 +1,7 @@
 import xml.etree.ElementTree as ET
 from pathlib import Path
 import traceback
+from tqdm import tqdm
 
 
 def get_data(xml_path):
@@ -10,7 +11,7 @@ def get_data(xml_path):
     class_mapping = {}
 
     annotation_files = xml_path.glob("*.xml")
-    for annot in annotation_files:
+    for annot in tqdm(annotation_files, desc="Reading Annotations"):
         try:
             et = ET.parse(annot)
             element = et.getroot()
