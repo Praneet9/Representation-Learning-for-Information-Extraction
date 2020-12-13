@@ -1,6 +1,7 @@
 import xml.etree.ElementTree as ET
 from pathlib import Path
 import traceback
+from tqdm import tqdm
 
 
 def get_data(xml_path):
@@ -10,7 +11,7 @@ def get_data(xml_path):
     class_mapping = {}
 
     annotation_files = xml_path.glob("*.xml")
-    for annot in annotation_files:
+    for annot in tqdm(annotation_files, desc="Reading Annotations"):
         try:
             et = ET.parse(annot)
             element = et.getroot()
@@ -23,17 +24,23 @@ def get_data(xml_path):
                 continue
 
             annotation_data = {'filename': annot.stem, 'width': element_width,
-                               'height': element_height, 'bboxes': []}
+                               'height': element_height, 'fields': {'invoice_no': {'true_candidates': [],
+                                                                                   'other_candidates': []},
+                                                                    'invoice_date': {'true_candidates': [],
+                                                                                     'other_candidates': []},
+                                                                    'total': {'true_candidates': [],
+                                                                              'other_candidates': []}}}
+            for i, cls in enumerate(annotation_data['fields']):
+                classes_count[cls] = 0
+                class_mapping[cls] = i
 
             for element_obj in element_objs:
                 class_name = element_obj.find('name').text
-                if class_name not in classes_count:
-                    classes_count[class_name] = 1
+                if class_name not in annotation_data['fields']:
+                    print("Unidentified field Found:", class_name, "in file:", annot.name)
+                    continue
                 else:
                     classes_count[class_name] += 1
-
-                if class_name not in class_mapping:
-                    class_mapping[class_name] = len(class_mapping)
 
                 obj_bbox = element_obj.find('bndbox')
                 x1 = int(round(float(obj_bbox.find('xmin').text)))
@@ -41,8 +48,8 @@ def get_data(xml_path):
                 x2 = int(round(float(obj_bbox.find('xmax').text)))
                 y2 = int(round(float(obj_bbox.find('ymax').text)))
                 difficulty = int(element_obj.find('difficult').text) == 1
-                annotation_data['bboxes'].append(
-                    {'class': class_name, 'x1': x1, 'x2': x2, 'y1': y1, 'y2': y2, 'difficult': difficulty})
+                annotation_data['fields'][class_name]['true_candidates'].append({'x1': x1, 'x2': x2, 'y1': y1, 'y2': y2,
+                                                                                 'difficult': difficulty})
 
             annotations.append(annotation_data)
 
