@@ -18,7 +18,9 @@ def find_neighbour(cad, words, x_offset, y_offset, width, height):
     #     a['keyword'] = {}
 
     # neighbour
-
+    words_copy = words.copy()
+    if cad in words_copy:
+        words_copy.remove(cad)
     neighbours = []
 
     neighbour_x1 = cad['x1'] - x_offset
@@ -35,12 +37,12 @@ def find_neighbour(cad, words, x_offset, y_offset, width, height):
 
     neighbour_bbox = [neighbour_x1, neighbour_y1, neighbour_x2, neighbour_y2]
     iou_scores = []
-    for w in words:
+    for w in words_copy:
         iou_scores.append(op.bb_intersection_over_boxB(neighbour_bbox, [w['x1'], w['y1'], w['x2'], w['y2']]))
 
     for i, iou in enumerate(iou_scores):
-        if iou > 0.2:
-            neighbours.append(words[i])
+        if iou > 0.5:
+            neighbours.append(words_copy[i])
 
     return neighbours
 
@@ -79,5 +81,6 @@ def attach_neighbour(annotation, ocr_path):
         except Exception:
             trace = traceback.format_exc()
             print("Error in finding neighbour: %s : %s" % (anno['filename'], trace))
+            break
 
     return annotation
