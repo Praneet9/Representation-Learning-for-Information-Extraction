@@ -114,6 +114,8 @@ if not os.path.exists('../dataset/candidates'):
 
 for file in tqdm(tesseract_results):
     output_path = '../dataset/candidates/' + os.path.basename(file)
+    if os.path.exists(output_path):
+        continue
     with open(file, 'rb') as f:
         data = json.load(f)
 
@@ -130,9 +132,23 @@ for file in tqdm(tesseract_results):
 
     text = ' '.join([word['text'].strip() for word in all_words])
 
-    invoice_date_candidates = get_dates(text)
-    total_amount_candidates = get_amounts(all_words)
-    invoice_no_candidates = get_invoice_nums(all_words)
+    try:
+        invoice_date_candidates = get_dates(text)
+    except Exception as e:
+        print("Problem in", output_path, "for dates")
+        invoice_date_candidates = []
+
+    try:
+        total_amount_candidates = get_amounts(all_words)
+    except Exception as e:
+        print("Problem in", output_path, "for words")
+        total_amount_candidates = []
+
+    try:
+        invoice_no_candidates = get_invoice_nums(all_words)
+    except Exception as e:
+        print("Problem in", output_path, "for inv nos")
+        invoice_no_candidates = []
 
     candidate_data = {
         'invoice_number': invoice_no_candidates,
