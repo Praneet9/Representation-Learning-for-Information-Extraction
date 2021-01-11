@@ -1,18 +1,22 @@
 from pathlib import Path
+
+import cv2
+from torch.utils import data
+
 from utils import xml_parser, Neighbour, visualizer, candidate
 from utils import operations as op
-import cv2
+from network import dataset
 
 this_dir = Path.cwd()
 xmls_path = this_dir / "dataset" / "xmls"
-ocr_path = this_dir / "dataset" / "tesseract_results"
+ocr_path = this_dir / "dataset" / "tesseract_results_lstm"
 image_path = this_dir / "dataset" / "images"
 candidate_path = this_dir / "dataset" / "candidates"
 
-annotation, classes_count, class_mapping = xml_parser.get_data(xmls_path)
-annotation = candidate.attach_candidate(annotation, candidate_path)
-annotation = Neighbour.attach_neighbour(annotation, ocr_path)
-annotation = op.normalize_positions(annotation)
+# annotation, classes_count, class_mapping = xml_parser.get_data(xmls_path)
+# annotation = candidate.attach_candidate(annotation, candidate_path)
+# annotation = Neighbour.attach_neighbour(annotation, ocr_path)
+# annotation = op.normalize_positions(annotation)
 
 # images = list(image_path.glob("*.jpg"))
 # for img in images:
@@ -20,5 +24,16 @@ annotation = op.normalize_positions(annotation)
 #     cv2.imwrite('test.jpg', out_img)
 #     break
 
-print()
+# print(annotation)
 
+batch_size = 32
+field_dict = {'invoice_date':0, 'invoice_no':1, 'total':2}
+
+dataset = dataset.DocumentsDataset(xmls_path, ocr_path, image_path, candidate_path, field_dict)
+
+dataloader = data.DataLoader(dataset, batch_size=32, shuffle=True)
+
+x, Y = next(iter(dataloader))
+
+print(x)
+print(Y)
