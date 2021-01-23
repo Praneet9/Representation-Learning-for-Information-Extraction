@@ -7,33 +7,39 @@ PAD = 0
 def get_neighbours(list_of_neighbours, vocabulary, n_neighbours):
     """Returns a list of neighbours and coordinates."""
     neighbours = list()
+    neighbour_cords = list()
     
     for neighbour in list_of_neighbours:
         if neighbour['text'] not in vocabulary:
             vocabulary[neighbour['text']] = len(vocabulary)
 
-        neighbours.extend(
+        neighbours.append(vocabulary[neighbour['text']])
+        neighbour_cords.append(
             [
-                vocabulary[neighbour['text']],
                 neighbour['x'],
                 neighbour['y']
             ]
         )
     
-    len_neighbours = int(len(neighbours) / 3) 
+    len_neighbours = len(neighbours)
     if len_neighbours != n_neighbours:
         if  len_neighbours > n_neighbours:
-            neighbours = neighbours[:(n_neighbours * 3)]
+            neighbours = neighbours[:n_neighbours]
+            neighbour_cords = neighbour_cords[:n_neighbours]
         else:
-            neighbours.extend(['<PAD>', 0., 0.] * (n_neighbours - len_neighbours))
+            neighbours.append(vocabulary['<PAD>'])
+            neighbour_cords.extend([[0., 0.]] * (n_neighbours - len_neighbours))
 
-    return neighbours
+    return neighbours, neighbour_cords
 
 def parse_input(annotations, fields_dict, n_neighbours=5, vocabulary=None):
     """Generates input samples from annotations data."""
-
-    x = list()
-    Y = list()
+    
+    field_ids = list()
+    candidate_cords = list()
+    neighbours = list()
+    neighbour_cords = list()
+    labels = list()
     if not vocabulary:
         vocabulary = { '<PAD>':PAD }
 
@@ -43,27 +49,34 @@ def parse_input(annotations, fields_dict, n_neighbours=5, vocabulary=None):
         
         for field in fields:
             if fields[field]['true_candidates']:
-                Y.append(1.)
-                neighbours = get_neighbours(
+                _neighbours, _neighbour_cords = get_neighbours(
                     fields[field]['true_candidates'][0]['neighbours'],
                     vocabulary, n_neighbours
                 )
-                x.append(
+                labels.append(1.)
+                field_ids.append(fields_dict[field])
+                candidate_cords.append(
                     [
-                        fields_dict[field],
                         fields[field]['true_candidates'][0]['x'],
                         fields[field]['true_candidates'][0]['y']
-                    ] + neighbours)
-
+                    ]
+                )
+                neighbours.append(_neighbours)
+                neighbour_cords.append(_neighbour_cords)
+               
                 for candidate in fields[field]['other_candidates']:
 
-                    Y.append(0.)
-                    neighbours = get_neighbours(candidate['neighbours'], vocabulary, n_neighbours)
-                    x.append(
+                    _neighbours, _neighbour_cords = get_neighbours(candidate['neighbours'], vocabulary, n_neighbours)
+                    labels.append(0.)
+                    field_ids.append(fields_dict[field])
+                    candidate_cords.append(
                         [
-                            fields_dict[field],
                             candidate['x'],
-                            candidate['y'],
-                        ] + neighbours)
-
-    return x, Y, vocabulary
+                            candidate['y']
+                        ]
+                    )
+                    neighbours.append(_neighbours)
+                    neighbour_cords.append(_neighbour_cords)
+                    
+                    
+    return field_ids, candidate_cords, neighbours, neighbour_cords, labels, vocabulary

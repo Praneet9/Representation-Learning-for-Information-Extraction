@@ -17,11 +17,18 @@ class DocumentsDataset(data.Dataset):
         annotation = candidate.attach_candidate(annotation, candidate_path)
         annotation = Neighbour.attach_neighbour(annotation, ocr_path)
         annotation = op.normalize_positions(annotation)
-        self.features, self.labels, self.vocab = preprocess.parse_input(annotation, field_dict, n_neighbour, vocab)        
+        _data = preprocess.parse_input(annotation, field_dict, n_neighbour, vocab)
+        self.field_ids, self.candidate_cords, self.neighbours, self.neighbour_cords, self.labels, self.vocab = _data
     
     def __len__(self):
-        return len(self.features)
+        return len(self.field_ids)
     
     def __getitem__(self, idx):
         
-        return torch.tensor(self.features[idx]), self.labels[idx]
+        return (
+            torch.tensor(self.field_ids[idx]),
+            torch.tensor(self.candidate_cords[idx]),
+            torch.tensor(self.neighbours[idx]),
+            torch.tensor(self.neighbour_cords[idx]),
+            self.labels[idx]
+        )
