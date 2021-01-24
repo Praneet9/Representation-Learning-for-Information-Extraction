@@ -97,8 +97,8 @@ if __name__ == '__main__':
     TRAIN_DATA_LEN = len(doc_data) - VAL_DATA_LEN
     train_set, val_set = data.random_split(doc_data, [TRAIN_DATA_LEN, VAL_DATA_LEN])
 
-    training_data = data.DataLoader(train_set, batch_size=constants.BATCH_SIZE)
-    validation_data = data.DataLoader(val_set, batch_size=constants.BATCH_SIZE)
+    training_data = data.DataLoader(train_set, batch_size=constants.BATCH_SIZE, shuffle=True)
+    validation_data = data.DataLoader(val_set, batch_size=constants.BATCH_SIZE, shuffle=True)
 
     rlie = Model(VOCAB_SIZE, constants.EMBEDDING_SIZE, constants.NEIGHBOURS, constants.HEADS)
 
