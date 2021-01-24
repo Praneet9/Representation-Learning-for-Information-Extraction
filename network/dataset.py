@@ -28,7 +28,7 @@ class DocumentsDataset(data.Dataset):
         return (
             torch.tensor(self.field_ids[idx]).type(torch.FloatTensor),
             torch.tensor(self.candidate_cords[idx]).type(torch.FloatTensor),
-            torch.tensor(self.neighbours[idx]).type(torch.FloatTensor),
+            torch.tensor(self.neighbours[idx]),
             torch.tensor(self.neighbour_cords[idx]).type(torch.FloatTensor),
             torch.tensor(self.labels[idx]).type(torch.FloatTensor)
         )
