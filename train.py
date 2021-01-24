@@ -4,6 +4,7 @@ from torch.utils import data
 import utils.constants as constants
 from network.model import Model
 from network import dataset
+from evaluate import evaluate
 
 
 def train(model, train_dataloader, val_dataloader, epochs):
@@ -22,8 +23,6 @@ def train(model, train_dataloader, val_dataloader, epochs):
 
         train_loss = 0.0
         train_accuracy = 0.0
-        val_loss = 0.0
-        val_accuracy = 0.0
 
         for field, candidate, words, positions, labels in train_dataloader:
 
@@ -47,29 +46,13 @@ def train(model, train_dataloader, val_dataloader, epochs):
 
         else:
 
-            with torch.no_grad():
-
-                for val_field, val_candidate, val_words, val_positions, val_labels in val_dataloader:
-                    val_field = val_field.to(device)
-                    val_candidate = val_candidate.to(device)
-                    val_words = val_words.to(device)
-                    val_positions = val_positions.to(device)
-                    val_labels = val_labels.to(device)
-
-                    val_outputs = model(val_field, val_candidate, val_words, val_positions)
-                    validation_loss = criterion(val_outputs, val_labels)
-
-                    _, val_preds = torch.max(val_outputs, 1)
-                    val_accuracy += torch.sum(val_preds == val_labels).item()
-                    val_loss += validation_loss.item()
+            val_accuracy, val_loss = evaluate(model, val_dataloader, criterion)
 
             train_loss = train_loss / len(train_dataloader)
             train_accuracy = train_accuracy / len(train_dataloader)
             train_loss_history.append(train_loss)
             train_accuracy_history.append(train_accuracy)
 
-            val_loss = val_loss / len(val_dataloader)
-            val_accuracy = val_accuracy / len(val_dataloader)
             val_loss_history.append(val_loss)
             val_accuracy_history.append(val_accuracy)
 
@@ -78,13 +61,12 @@ def train(model, train_dataloader, val_dataloader, epochs):
                   Validation Loss: {round(val_loss, 4)} \
                   Validation Accuracy: {round(val_accuracy, 4)}")
 
-    training_history = {
+    return {
         'training_loss': train_loss_history,
         'training_accuracy': train_accuracy_history,
         'validation_loss': val_loss_history,
         'validation_accuracy': val_accuracy_history
     }
-    return training_history
 
 
 if __name__ == '__main__':
