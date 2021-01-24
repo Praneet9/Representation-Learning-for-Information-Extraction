@@ -39,8 +39,7 @@ def train(model, train_dataloader, val_dataloader, epochs):
             loss.backward()
             optimizer.step()
 
-            _, preds = torch.max(outputs, 1)
-
+            preds = outputs.round()
             train_accuracy += torch.sum(preds == labels).item()
             train_loss += loss.item()
 
@@ -48,8 +47,8 @@ def train(model, train_dataloader, val_dataloader, epochs):
 
             val_accuracy, val_loss = evaluate(model, val_dataloader, criterion)
 
-            train_loss = train_loss / len(train_dataloader)
-            train_accuracy = train_accuracy / len(train_dataloader)
+            train_loss = train_loss / train_dataloader.sampler.num_samples
+            train_accuracy = train_accuracy / train_dataloader.sampler.num_samples
             train_loss_history.append(train_loss)
             train_accuracy_history.append(train_accuracy)
 
@@ -73,7 +72,7 @@ if __name__ == '__main__':
 
     doc_data = dataset.DocumentsDataset(constants.XMLS, constants.OCR,
                                         constants.IMAGES, constants.CANDIDATES,
-                                        constants.FIELDS, constants.NEIGHBOURS)
+                                        constants.NEIGHBOURS)
     VOCAB_SIZE = len(doc_data.vocab)
     VAL_DATA_LEN = int(len(doc_data) * constants.VAL_SPLIT)
     TRAIN_DATA_LEN = len(doc_data) - VAL_DATA_LEN
@@ -85,3 +84,4 @@ if __name__ == '__main__':
     rlie = Model(VOCAB_SIZE, constants.EMBEDDING_SIZE, constants.NEIGHBOURS, constants.HEADS)
 
     history = train(rlie, training_data, validation_data, constants.EPOCHS)
+    print(history)

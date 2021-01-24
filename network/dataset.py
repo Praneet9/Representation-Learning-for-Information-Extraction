@@ -24,7 +24,6 @@ class DocumentsDataset(data.Dataset):
         return len(self.field_ids)
     
     def __getitem__(self, idx):
-        print(idx)
         return (
             torch.tensor(self.field_ids[idx]).type(torch.FloatTensor),
             torch.tensor(self.candidate_cords[idx]).type(torch.FloatTensor),

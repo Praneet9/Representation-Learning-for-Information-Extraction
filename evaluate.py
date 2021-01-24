@@ -24,12 +24,12 @@ def evaluate(model, val_dataloader, criterion):
             val_outputs = model(val_field, val_candidate, val_words, val_positions)
             validation_loss = criterion(val_outputs, val_labels)
 
-            _, val_preds = torch.max(val_outputs, 1)
+            val_preds = val_outputs.round()
             val_accuracy += torch.sum(val_preds == val_labels).item()
             val_loss += validation_loss.item()
 
-        val_loss = val_loss / len(val_dataloader)
-        val_accuracy = val_accuracy / len(val_dataloader)
+        val_loss = val_loss / val_dataloader.sampler.num_samples
+        val_accuracy = val_accuracy / val_dataloader.sampler.num_samples
 
     return val_accuracy, val_loss
 
