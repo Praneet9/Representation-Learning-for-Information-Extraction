@@ -1,8 +1,9 @@
 """ Module to for preprocessing methods """
-import json
-from tqdm import tqdm 
+from tqdm import tqdm
+import numpy as np
 
 PAD = 0
+
 
 def get_neighbours(list_of_neighbours, vocabulary, n_neighbours):
     """Returns a list of neighbours and coordinates."""
@@ -32,6 +33,7 @@ def get_neighbours(list_of_neighbours, vocabulary, n_neighbours):
 
     return neighbours, neighbour_cords
 
+
 def parse_input(annotations, fields_dict, n_neighbours=5, vocabulary=None):
     """Generates input samples from annotations data."""
     
@@ -40,8 +42,9 @@ def parse_input(annotations, fields_dict, n_neighbours=5, vocabulary=None):
     neighbours = list()
     neighbour_cords = list()
     labels = list()
+    n_classes = len(fields_dict)
     if not vocabulary:
-        vocabulary = { '<PAD>':PAD }
+        vocabulary = {'<PAD>': PAD}
 
     for annotation in tqdm(annotations, desc='Parsing Input'):
         
@@ -53,8 +56,8 @@ def parse_input(annotations, fields_dict, n_neighbours=5, vocabulary=None):
                     fields[field]['true_candidates'][0]['neighbours'],
                     vocabulary, n_neighbours
                 )
-                labels.append(1.)
-                field_ids.append(fields_dict[field])
+                labels.append([1.])
+                field_ids.append(np.eye(n_classes)[fields_dict[field]])
                 candidate_cords.append(
                     [
                         fields[field]['true_candidates'][0]['x'],
@@ -67,8 +70,8 @@ def parse_input(annotations, fields_dict, n_neighbours=5, vocabulary=None):
                 for candidate in fields[field]['other_candidates']:
 
                     _neighbours, _neighbour_cords = get_neighbours(candidate['neighbours'], vocabulary, n_neighbours)
-                    labels.append(0.)
-                    field_ids.append(fields_dict[field])
+                    labels.append([0.])
+                    field_ids.append(np.eye(n_classes)[fields_dict[field]])
                     candidate_cords.append(
                         [
                             candidate['x'],
@@ -77,6 +80,5 @@ def parse_input(annotations, fields_dict, n_neighbours=5, vocabulary=None):
                     )
                     neighbours.append(_neighbours)
                     neighbour_cords.append(_neighbour_cords)
-                    
-                    
+
     return field_ids, candidate_cords, neighbours, neighbour_cords, labels, vocabulary
