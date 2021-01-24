@@ -31,8 +31,9 @@ def get_data(xml_path):
                                                                     'total': {'true_candidates': [],
                                                                               'other_candidates': []}}}
             for i, cls in enumerate(annotation_data['fields']):
-                classes_count[cls] = 0
-                class_mapping[cls] = i
+                if cls not in classes_count:
+                    classes_count[cls] = 0
+                    class_mapping[cls] = i
 
             for element_obj in element_objs:
                 class_name = element_obj.find('name').text

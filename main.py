@@ -9,7 +9,7 @@ from network import dataset
 
 this_dir = Path.cwd()
 xmls_path = this_dir / "dataset" / "xmls"
-ocr_path = this_dir / "dataset" / "tesseract_results_lstm"
+ocr_path = this_dir / "dataset" / "tesseract_results"
 image_path = this_dir / "dataset" / "images"
 candidate_path = this_dir / "dataset" / "candidates"
 
@@ -27,13 +27,12 @@ candidate_path = this_dir / "dataset" / "candidates"
 # print(annotation)
 
 batch_size = 32
-field_dict = {'invoice_date':0, 'invoice_no':1, 'total':2}
+# field_dict = {'invoice_date':0, 'invoice_no':1, 'total':2}
 
-dataset = dataset.DocumentsDataset(xmls_path, ocr_path, image_path, candidate_path, field_dict)
+doc_dataset = dataset.DocumentsDataset(xmls_path, ocr_path, image_path, candidate_path)
 
-dataloader = data.DataLoader(dataset, batch_size=32, shuffle=True)
+dataloader = data.DataLoader(doc_dataset, batch_size=32, shuffle=True)
 
-x, Y = next(iter(dataloader))
+field_id, candidate_pos, neighbour, neighbour_pos, label = next(iter(dataloader))
 
-print(x)
-print(Y)
+print("s")

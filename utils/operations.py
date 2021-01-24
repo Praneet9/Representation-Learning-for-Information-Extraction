@@ -1,5 +1,5 @@
 from tqdm import tqdm
-
+import traceback
 
 def bb_intersection_over_union(boxA, boxB):
     # determine the (x, y)-coordinates of the intersection rectangle
@@ -48,31 +48,35 @@ def bb_intersection_over_boxB(boxA, boxB):
 def normalize_positions(annotations):
 
     candidate_types = ['true_candidates', 'other_candidates']
-
     for anno in tqdm(annotations, desc="normalizing position coordinates"):
-        for cls, cads in anno['fields'].items():
-            for cd_typ in candidate_types:
-                for i, cd in enumerate(cads[cd_typ]):
-                    cd = cd.copy()
-                    x1 = cd['x1']
-                    y1 = cd['y1']
-                    x2 = cd['x2']
-                    y2 = cd['y2']
-                    cd['x'] = ((x1 + x2) / 2) / anno['width']
-                    cd['y'] = ((y1 + y2) / 2) / anno['height']
-                    neighbours = []
-                    for neh in cd['neighbours']:
-                        neh = neh.copy()
-                        x1_neh = neh['x1']
-                        y1_neh = neh['y1']
-                        x2_neh = neh['x2']
-                        y2_neh = neh['y2']
+        try:
+            for cls, cads in anno['fields'].items():
+                for cd_typ in candidate_types:
+                    for i, cd in enumerate(cads[cd_typ]):
+                        cd = cd.copy()
+                        x1 = cd['x1']
+                        y1 = cd['y1']
+                        x2 = cd['x2']
+                        y2 = cd['y2']
+                        cd['x'] = ((x1 + x2) / 2) / anno['width']
+                        cd['y'] = ((y1 + y2) / 2) / anno['height']
+                        neighbours = []
+                        for neh in cd['neighbours']:
+                            neh = neh.copy()
+                            x1_neh = neh['x1']
+                            y1_neh = neh['y1']
+                            x2_neh = neh['x2']
+                            y2_neh = neh['y2']
 
-                        # calculating neighbour position w.r.t candidate
-                        neh['x'] = (((x1_neh + x2_neh) / 2) / anno['width']) - cd['x']
-                        neh['y'] = (((y1_neh + y2_neh) / 2) / anno['height']) - cd['y']
-                        neighbours.append(neh)
-                    cd['neighbours'] = neighbours
-                    anno['fields'][cls][cd_typ][i] = cd
+                            # calculating neighbour position w.r.t candidate
+                            neh['x'] = (((x1_neh + x2_neh) / 2) / anno['width']) - cd['x']
+                            neh['y'] = (((y1_neh + y2_neh) / 2) / anno['height']) - cd['y']
+                            neighbours.append(neh)
+                        cd['neighbours'] = neighbours
+                        anno['fields'][cls][cd_typ][i] = cd
+        except Exception:
+            trace = traceback.format_exc()
+            print("Error in normalizing position: %s : %s" % (anno['filename'], trace))
+            break
 
     return annotations

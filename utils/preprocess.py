@@ -24,11 +24,11 @@ def get_neighbours(list_of_neighbours, vocabulary, n_neighbours):
     
     len_neighbours = len(neighbours)
     if len_neighbours != n_neighbours:
-        if  len_neighbours > n_neighbours:
+        if len_neighbours > n_neighbours:
             neighbours = neighbours[:n_neighbours]
             neighbour_cords = neighbour_cords[:n_neighbours]
         else:
-            neighbours.append(vocabulary['<PAD>'])
+            neighbours.extend([vocabulary['<PAD>']] * (n_neighbours - len_neighbours))
             neighbour_cords.extend([[0., 0.]] * (n_neighbours - len_neighbours))
 
     return neighbours, neighbour_cords
