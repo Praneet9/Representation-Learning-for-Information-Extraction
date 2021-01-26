@@ -8,6 +8,7 @@ VOCAB_SIZE = 14947
 BATCH_SIZE = 2
 EPOCHS = 10
 VAL_SPLIT = 0.2
+LR = 0.001
 
 current_directory = Path.cwd()
 XMLS = current_directory / "dataset" / "xmls"
