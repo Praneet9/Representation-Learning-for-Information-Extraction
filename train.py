@@ -34,15 +34,16 @@ def train(model, train_dataloader, val_dataloader, epochs):
         y_preds = []
         y_labels = []
 
-        for field, candidate, words, positions, labels in tqdm(train_dataloader, desc="Epoch %s" % epoch):
+        for field, candidate, words, positions, masks, labels in tqdm(train_dataloader, desc="Epoch %s" % epoch):
 
             field = field.to(device)
             candidate = candidate.to(device)
             words = words.to(device)
             positions = positions.to(device)
+            masks = masks.to(device)
             labels = labels.to(device)
 
-            outputs = model(field, candidate, words, positions)
+            outputs = model(field, candidate, words, positions, masks)
             loss = criterion(outputs, labels)
 
             optimizer.zero_grad()

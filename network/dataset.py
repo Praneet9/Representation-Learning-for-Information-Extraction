@@ -6,6 +6,7 @@ from utils import operations as op
 from utils import preprocess
 import pickle
 
+
 class DocumentsDataset(data.Dataset):
     """Stores the annotated documents dataset."""
     
@@ -22,7 +23,7 @@ class DocumentsDataset(data.Dataset):
             print("Classs counts:", classes_count)
             _data = cached_data['data']
             self.vocab = cached_data['vocab']
-            self.field_ids, self.candidate_cords, self.neighbours, self.neighbour_cords, self.labels = _data
+            self.field_ids, self.candidate_cords, self.neighbours, self.neighbour_cords, self.mask, self.labels = _data
         else:
             print("Preprocessed data not available")
             annotation, classes_count, class_mapping = xml_parser.get_data(xmls_path)
@@ -32,7 +33,7 @@ class DocumentsDataset(data.Dataset):
             annotation, self.vocab = Neighbour.attach_neighbour(annotation, ocr_path, vocab_size=vocab_size)
             annotation = op.normalize_positions(annotation)
             _data = preprocess.parse_input(annotation, class_mapping, n_neighbour, self.vocab)
-            self.field_ids, self.candidate_cords, self.neighbours, self.neighbour_cords, self.labels = _data
+            self.field_ids, self.candidate_cords, self.neighbours, self.neighbour_cords, self.mask, self.labels = _data
             cached_data = {'count': classes_count, "mapping": class_mapping, 'vocab': self.vocab, 'data': _data}
             print("Saving Cache..")
             with open(cached_data_path, 'wb') as f:
@@ -48,5 +49,6 @@ class DocumentsDataset(data.Dataset):
             torch.tensor(self.candidate_cords[idx]).type(torch.FloatTensor),
             torch.tensor(self.neighbours[idx]),
             torch.tensor(self.neighbour_cords[idx]).type(torch.FloatTensor),
+            torch.tensor(self.mask[idx]).type(torch.FloatTensor),
             torch.tensor(self.labels[idx]).type(torch.FloatTensor)
         )

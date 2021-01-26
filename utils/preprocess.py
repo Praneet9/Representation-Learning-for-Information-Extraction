@@ -2,7 +2,6 @@
 
 from tqdm import tqdm
 import numpy as np
-
 from utils import str_utils
 
 PAD = 0
@@ -52,6 +51,7 @@ def parse_input(annotations, fields_dict, n_neighbours=5, vocabulary=None):
     neighbours = list()
     neighbour_cords = list()
     labels = list()
+    mask = list()
     n_classes = len(fields_dict)
     if not vocabulary:
         raise Exception("Vocabulary is missing. Use VocabularyBuilder to generate vocabulary of the data.")
@@ -76,7 +76,8 @@ def parse_input(annotations, fields_dict, n_neighbours=5, vocabulary=None):
                 )
                 neighbours.append(_neighbours)
                 neighbour_cords.append(_neighbour_cords)
-               
+                mask.append([1 if i else 0 for i in _neighbours])
+
                 for candidate in fields[field]['other_candidates']:
 
                     _neighbours, _neighbour_cords = get_neighbours(candidate['neighbours'], vocabulary, n_neighbours)
@@ -90,5 +91,6 @@ def parse_input(annotations, fields_dict, n_neighbours=5, vocabulary=None):
                     )
                     neighbours.append(_neighbours)
                     neighbour_cords.append(_neighbour_cords)
+                    mask.append([1 if i else 0 for i in _neighbours])
 
-    return field_ids, candidate_cords, neighbours, neighbour_cords, labels
+    return field_ids, candidate_cords, neighbours, neighbour_cords, mask, labels

@@ -23,7 +23,7 @@ class Model(nn.Module):
         self.linear_projection_2 = nn.Linear(128 + (2 * embedding_dim), embedding_dim)
         self.cos_sim = nn.CosineSimilarity(dim=1, eps=1e-6)
 
-    def forward(self, field_id, candidate, neighbour_words, neighbour_positions):
+    def forward(self, field_id, candidate, neighbour_words, neighbour_positions, masks):
         # Field and candidate embeddings
         id_embed = self.field_embed(field_id)
         cand_embed = self.cand_embed(candidate)
@@ -32,7 +32,7 @@ class Model(nn.Module):
         neighbour_embeds = self.neighbour_embeddings(neighbour_words, neighbour_positions)
 
         # Attention encodings
-        self_attention = self.attention_encodings(neighbour_embeds, neighbour_embeds, neighbour_embeds)
+        self_attention = self.attention_encodings(neighbour_embeds, neighbour_embeds, neighbour_embeds, mask=None)
 
         # Linear projection of attention to concatenate with candidate embedding
         bs = self_attention.size(0)
