@@ -2,7 +2,7 @@ dataset/
 .idea/
 utils/__pycache__/
 runs/
-
+output/
 # Created by https://www.toptal.com/developers/gitignore/api/python,pycharm,jupyternotebooks,macos
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,pycharm,jupyternotebooks,macos
 

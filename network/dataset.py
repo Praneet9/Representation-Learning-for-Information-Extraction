@@ -4,21 +4,40 @@ from torch.utils import data
 from utils import xml_parser, Neighbour, candidate
 from utils import operations as op
 from utils import preprocess
-
+import pickle
 
 class DocumentsDataset(data.Dataset):
     """Stores the annotated documents dataset."""
     
-    def __init__(self, xmls_path, ocr_path, image_path, candidate_path, n_neighbour=5, vocab_size=512):
+    def __init__(self, xmls_path, ocr_path, candidate_path, output_path, n_neighbour=5, vocab_size=512):
         """ Initialize the dataset with preprocessing """
-        annotation, classes_count, class_mapping = xml_parser.get_data(xmls_path)
-        print("Class Mapping:", class_mapping)
-        print("Classs counts:", classes_count)
-        annotation = candidate.attach_candidate(annotation, candidate_path)
-        annotation, self.vocab = Neighbour.attach_neighbour(annotation, ocr_path, vocab_size=vocab_size)
-        annotation = op.normalize_positions(annotation)
-        _data = preprocess.parse_input(annotation, class_mapping, n_neighbour, self.vocab)
-        self.field_ids, self.candidate_cords, self.neighbours, self.neighbour_cords, self.labels = _data
+        cached_data_path = output_path / "cached_data.pickle"
+        if cached_data_path.exists():
+            print("Preprocessed data available, Loading data from cache...")
+            with open(cached_data_path, "rb") as f:
+                cached_data = pickle.load(f)
+            classes_count = cached_data['count']
+            class_mapping = cached_data['mapping']
+            print("\nClass Mapping:", class_mapping)
+            print("Classs counts:", classes_count)
+            _data = cached_data['data']
+            self.vocab = cached_data['vocab']
+            self.field_ids, self.candidate_cords, self.neighbours, self.neighbour_cords, self.labels = _data
+        else:
+            print("Preprocessed data not available")
+            annotation, classes_count, class_mapping = xml_parser.get_data(xmls_path)
+            print("Class Mapping:", class_mapping)
+            print("Classs counts:", classes_count)
+            annotation = candidate.attach_candidate(annotation, candidate_path)
+            annotation, self.vocab = Neighbour.attach_neighbour(annotation, ocr_path, vocab_size=vocab_size)
+            annotation = op.normalize_positions(annotation)
+            _data = preprocess.parse_input(annotation, class_mapping, n_neighbour, self.vocab)
+            self.field_ids, self.candidate_cords, self.neighbours, self.neighbour_cords, self.labels = _data
+            cached_data = {'count': classes_count, "mapping": class_mapping, 'vocab': self.vocab, 'data': _data}
+            print("Saving Cache..")
+            with open(cached_data_path, 'wb') as f:
+                pickle.dump(cached_data, f, protocol=pickle.HIGHEST_PROTOCOL)
+            print("Done !!")
     
     def __len__(self):
         return len(self.field_ids)

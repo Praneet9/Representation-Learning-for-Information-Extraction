@@ -98,7 +98,7 @@ def train(model, train_dataloader, val_dataloader, epochs):
 if __name__ == '__main__':
 
     doc_data = dataset.DocumentsDataset(constants.XMLS, constants.OCR,
-                                        constants.IMAGES, constants.CANDIDATES,
+                                        constants.CANDIDATES, constants.OUTPUT_PATH,
                                         constants.NEIGHBOURS, constants.VOCAB_SIZE)
     VOCAB_SIZE = len(doc_data.vocab)
     VAL_DATA_LEN = int(len(doc_data) * constants.VAL_SPLIT)
