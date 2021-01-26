@@ -1,1 +1,1 @@
-# Representation-Learning-for-Information-Extraction
+# ReLIE: Representation-Learning-for-Information-Extraction

@@ -8,6 +8,7 @@ from evaluate import evaluate
 from sklearn.metrics import recall_score
 from focal_loss.focal_loss import FocalLoss
 from torch.utils.tensorboard import SummaryWriter
+from tqdm import tqdm
 
 
 def train(model, train_dataloader, val_dataloader, epochs):
@@ -33,7 +34,7 @@ def train(model, train_dataloader, val_dataloader, epochs):
         y_preds = []
         y_labels = []
 
-        for field, candidate, words, positions, labels in train_dataloader:
+        for field, candidate, words, positions, labels in tqdm(train_dataloader, desc="Epoch %s" % epoch):
 
             field = field.to(device)
             candidate = candidate.to(device)
@@ -77,7 +78,7 @@ def train(model, train_dataloader, val_dataloader, epochs):
             writer.add_scalar('Loss/validation', val_loss, epoch)
             writer.add_scalar('Accuracy/validation', val_accuracy, epoch)
 
-            print(f"Epoch:{epoch} Loss:{round(train_loss, 4)} \
+            print(f"Metrics for Epoch - {epoch}  Loss:{round(train_loss, 4)} \
                     Recall: {round(recall, 4)} \
                     Validation Loss: {round(val_loss, 4)} \
                     Validation Recall: {round(val_recall, 4)}")
