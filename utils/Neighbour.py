@@ -1,8 +1,9 @@
 import json
 import traceback
-from utils import operations as op
 from tqdm import tqdm
 
+from utils import operations as op
+from utils import vocabulary
 
 def find_neighbour(cad, words, x_offset, y_offset, width, height):
     # iou_scores = []
@@ -47,8 +48,10 @@ def find_neighbour(cad, words, x_offset, y_offset, width, height):
     return neighbours
 
 
-def attach_neighbour(annotation, ocr_path):
-
+def attach_neighbour(annotation, ocr_path, vocab_size):
+    
+    vocab_builder = vocabulary.VocabularyBuilder(max_size=vocab_size)
+    
     for anno in tqdm(annotation, desc="Attaching Neighbours"):
         try:
             file_name = anno['filename']
@@ -67,6 +70,8 @@ def attach_neighbour(annotation, ocr_path):
                 y2 = y + h
 
                 words.append({'text': txt, 'x1': x, 'y1': y, 'x2': x2, 'y2': y2})
+                
+                vocab_builder.add(txt)
 
             x_offset = int(anno['width'] * 0.1)
             y_offset = int(anno['height'] * 0.1)
@@ -82,5 +87,7 @@ def attach_neighbour(annotation, ocr_path):
             trace = traceback.format_exc()
             print("Error in finding neighbour: %s : %s" % (anno['filename'], trace))
             break
+            
+    _vocab = vocab_builder.build()
 
-    return annotation
+    return annotation, _vocab

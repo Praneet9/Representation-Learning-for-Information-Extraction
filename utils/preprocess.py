@@ -1,6 +1,9 @@
 """ Module to for preprocessing methods """
+
 from tqdm import tqdm
 import numpy as np
+
+from utils import str_utils
 
 PAD = 0
 
@@ -11,10 +14,17 @@ def get_neighbours(list_of_neighbours, vocabulary, n_neighbours):
     neighbour_cords = list()
     
     for neighbour in list_of_neighbours:
-        if neighbour['text'] not in vocabulary:
-            vocabulary[neighbour['text']] = len(vocabulary)
-
-        neighbours.append(vocabulary[neighbour['text']])
+        
+        text = neighbour['text'].lower()
+        if text not in vocabulary:
+            if str_utils.is_number(text):
+                neighbours.append(vocabulary['<NUMBER>'])
+            else:
+                neighbours.append(vocabulary['<RARE>'])
+        else:
+            neighbours.append(vocabulary[text])
+        
+        
         neighbour_cords.append(
             [
                 neighbour['x'],
@@ -44,8 +54,8 @@ def parse_input(annotations, fields_dict, n_neighbours=5, vocabulary=None):
     labels = list()
     n_classes = len(fields_dict)
     if not vocabulary:
-        vocabulary = {'<PAD>': PAD}
-
+        raise Exception("Vocabulary is missing. Use VocabularyBuilder to generate vocabulary of the data.")
+    
     for annotation in tqdm(annotations, desc='Parsing Input'):
         
         fields = annotation['fields']
@@ -81,4 +91,4 @@ def parse_input(annotations, fields_dict, n_neighbours=5, vocabulary=None):
                     neighbours.append(_neighbours)
                     neighbour_cords.append(_neighbour_cords)
 
-    return field_ids, candidate_cords, neighbours, neighbour_cords, labels, vocabulary
+    return field_ids, candidate_cords, neighbours, neighbour_cords, labels
