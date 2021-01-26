@@ -7,15 +7,17 @@ from network import dataset
 from evaluate import evaluate
 from sklearn.metrics import recall_score
 from focal_loss.focal_loss import FocalLoss
+from torch.utils.tensorboard import SummaryWriter
 
 
 def train(model, train_dataloader, val_dataloader, epochs):
 
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     model = model.to(device)
+    writer = SummaryWriter(comment=f"LR_{constants.LR}_BATCH_{constants.BATCH_SIZE}")
     # criterion = nn.BCELoss()
     criterion = FocalLoss(alpha=2, gamma=5)
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+    optimizer = torch.optim.Adam(model.parameters(), lr=constants.LR)
 
     train_loss_history = []
     train_accuracy_history = []
@@ -68,11 +70,20 @@ def train(model, train_dataloader, val_dataloader, epochs):
             val_accuracy_history.append(val_accuracy)
             val_recall_history.append(val_recall)
 
+            writer.add_scalar('Recall/train', recall, epoch)
+            writer.add_scalar('Loss/train', train_loss, epoch)
+            writer.add_scalar('Accuracy/train', train_accuracy, epoch)
+            writer.add_scalar('Recall/validation', val_recall, epoch)
+            writer.add_scalar('Loss/validation', val_loss, epoch)
+            writer.add_scalar('Accuracy/validation', val_accuracy, epoch)
+
             print(f"Epoch:{epoch} Loss:{round(train_loss, 4)} \
                     Recall: {round(recall, 4)} \
                     Validation Loss: {round(val_loss, 4)} \
                     Validation Recall: {round(val_recall, 4)}")
 
+    writer.flush()
+    writer.close()
     return {
         'training_loss': train_loss_history,
         'training_accuracy': train_accuracy_history,
