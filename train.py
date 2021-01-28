@@ -79,13 +79,14 @@ def train(model, train_dataloader, val_dataloader, epochs):
             writer.add_scalar('Loss/validation', val_loss, epoch)
             writer.add_scalar('Accuracy/validation', val_accuracy, epoch)
 
-            print(f"Metrics for Epoch - {epoch}  Loss:{round(train_loss, 4)} \
+            print(f"Metrics for Epoch {epoch}:  Loss:{round(train_loss, 4)} \
                     Recall: {round(recall, 4)} \
                     Validation Loss: {round(val_loss, 4)} \
                     Validation Recall: {round(val_recall, 4)}")
 
     writer.flush()
     writer.close()
+    torch.save(model, 'output/model.pth')  # saving model for inference
     return {
         'training_loss': train_loss_history,
         'training_accuracy': train_accuracy_history,

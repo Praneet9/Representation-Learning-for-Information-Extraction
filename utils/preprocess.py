@@ -76,7 +76,7 @@ def parse_input(annotations, fields_dict, n_neighbours=5, vocabulary=None):
                 )
                 neighbours.append(_neighbours)
                 neighbour_cords.append(_neighbour_cords)
-                mask.append([1 if i else 0 for i in _neighbours])
+                mask.append([[1 if i else 0 for i in _neighbours]])
 
                 for candidate in fields[field]['other_candidates']:
 
@@ -91,6 +91,6 @@ def parse_input(annotations, fields_dict, n_neighbours=5, vocabulary=None):
                     )
                     neighbours.append(_neighbours)
                     neighbour_cords.append(_neighbour_cords)
-                    mask.append([1 if i else 0 for i in _neighbours])
+                    mask.append([[1 if i else 0 for i in _neighbours]])
 
     return field_ids, candidate_cords, neighbours, neighbour_cords, mask, labels

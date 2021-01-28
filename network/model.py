@@ -32,7 +32,7 @@ class Model(nn.Module):
         neighbour_embeds = self.neighbour_embeddings(neighbour_words, neighbour_positions)
 
         # Attention encodings
-        self_attention = self.attention_encodings(neighbour_embeds, neighbour_embeds, neighbour_embeds, mask=None)
+        self_attention = self.attention_encodings(neighbour_embeds, neighbour_embeds, neighbour_embeds, mask=masks)
 
         # Linear projection of attention to concatenate with candidate embedding
         bs = self_attention.size(0)

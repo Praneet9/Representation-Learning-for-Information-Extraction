@@ -18,14 +18,15 @@ def evaluate(model, val_dataloader, criterion):
     y_labels = []
 
     with torch.no_grad():
-        for val_field, val_candidate, val_words, val_positions, val_labels in val_dataloader:
+        for val_field, val_candidate, val_words, val_positions, masks, val_labels in val_dataloader:
             val_field = val_field.to(device)
             val_candidate = val_candidate.to(device)
             val_words = val_words.to(device)
             val_positions = val_positions.to(device)
+            masks = masks.to(device)
             val_labels = val_labels.to(device)
 
-            val_outputs = model(val_field, val_candidate, val_words, val_positions)
+            val_outputs = model(val_field, val_candidate, val_words, val_positions, masks)
             validation_loss = criterion(val_outputs, val_labels)
 
             val_preds = val_outputs.round()
