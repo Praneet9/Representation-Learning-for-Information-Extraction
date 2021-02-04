@@ -26,7 +26,7 @@ def train(model, train_dataloader, val_dataloader, epochs):
     val_loss_history = []
     val_accuracy_history = []
     val_recall_history = []
-
+    val_max_score = 0.0
     for epoch in range(1, epochs + 1):
 
         train_loss = 0.0
@@ -58,7 +58,6 @@ def train(model, train_dataloader, val_dataloader, epochs):
             train_loss += loss.item()
 
         else:
-
             val_accuracy, val_loss, val_recall = evaluate(model, val_dataloader, criterion)
 
             train_loss = train_loss / train_dataloader.sampler.num_samples
@@ -78,7 +77,10 @@ def train(model, train_dataloader, val_dataloader, epochs):
             writer.add_scalar('Recall/validation', val_recall, epoch)
             writer.add_scalar('Loss/validation', val_loss, epoch)
             writer.add_scalar('Accuracy/validation', val_accuracy, epoch)
-
+            if val_recall > val_max_score: # Saving the best model
+                print('saving model....')
+                val_max_score = val_recall
+                torch.save(model, 'output/model.pth')
             print(f"Metrics for Epoch {epoch}:  Loss:{round(train_loss, 4)} \
                     Recall: {round(recall, 4)} \
                     Validation Loss: {round(val_loss, 4)} \
@@ -86,7 +88,6 @@ def train(model, train_dataloader, val_dataloader, epochs):
 
     writer.flush()
     writer.close()
-    torch.save(model, 'output/model.pth')  # saving model for inference
     return {
         'training_loss': train_loss_history,
         'training_accuracy': train_accuracy_history,
@@ -111,6 +112,6 @@ if __name__ == '__main__':
     validation_data = data.DataLoader(val_set, batch_size=constants.BATCH_SIZE, shuffle=True)
 
     rlie = Model(VOCAB_SIZE, constants.EMBEDDING_SIZE, constants.NEIGHBOURS, constants.HEADS)
-
+    # rlie = torch.load('output/model.pth')
     history = train(rlie, training_data, validation_data, constants.EPOCHS)
     print(history)
