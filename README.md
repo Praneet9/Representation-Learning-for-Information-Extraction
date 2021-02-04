@@ -10,7 +10,7 @@ This is an implementation of [ReLIE](https://research.google/pubs/pub49122/) for
 
 1. Clone the repository
 ```
-git clone https://github.com/vickipedia6/Generating_TV_Scripts.git
+git clone https://github.com/Praneet9/Representation-Learning-for-Information-Extraction.git
 ```
 2. Create a virtualenv and install the required packages
 ```
