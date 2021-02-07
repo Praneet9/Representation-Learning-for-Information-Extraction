@@ -34,7 +34,6 @@ def load_saved_vocab(path):
 
 def parse_input(annotations, fields_dict, n_neighbours=5, vocabulary=None):
     """Generates input samples from annotations data."""
-
     field_ids = list()
     candidate_cords = list()
     neighbours = list()
@@ -42,20 +41,20 @@ def parse_input(annotations, fields_dict, n_neighbours=5, vocabulary=None):
     n_classes = len(fields_dict)
     for field, value in annotations.items():
         if annotations[field]:
-            _neighbours, _neighbour_cords = preprocess.get_neighbours(
-                annotations[field][0]['neighbours'],
-                vocabulary, n_neighbours
-            )
-            field_ids.append(np.eye(n_classes)[fields_dict[field]])
-            candidate_cords.append(
-                [
-                    annotations[field][0]['x'],
-                    annotations[field][0]['y']
-                ]
-            )
-            neighbours.append(_neighbours)
-            neighbour_cords.append(_neighbour_cords)
-
+            for idx, val in enumerate(value):
+                _neighbours, _neighbour_cords = preprocess.get_neighbours(
+                    val['neighbours'],
+                    vocabulary, n_neighbours
+                )
+                field_ids.append(np.eye(n_classes)[fields_dict[field]])
+                candidate_cords.append(
+                    [
+                        val['x'],
+                        val['y']
+                    ]
+                )
+                neighbours.append(_neighbours)
+                neighbour_cords.append(_neighbour_cords)
     return torch.Tensor(field_ids).type(torch.FloatTensor), torch.Tensor(candidate_cords).type(
         torch.FloatTensor), torch.Tensor(neighbours).type(torch.int64), torch.Tensor(neighbour_cords).type(
         torch.FloatTensor)
@@ -105,6 +104,9 @@ def parse_args():
     parser.add_argument('--image', dest='image_path',
                         help='directory to load models',
                         type=str)
+    parser.add_argument('--visualize', dest='visualize',
+                        help='directory to load models',
+                        action='store_true')
     parser.add_argument('--cuda', dest='cuda',
                         help='whether use CUDA',
                         action='store_true')
@@ -134,9 +136,27 @@ def main():
     candidate_cords = candidate_cords.to(device)
     neighbours = neighbours.to(device)
     neighbour_cords = neighbour_cords.to(device)
-    model_outputs = rlie(field_ids, candidate_cords, neighbours, neighbour_cords)
-    model_preds = model_outputs.round()
-    print(model_preds)
+    field_idx_candidate = np.argmax(field_ids.detach().to('cpu').numpy(), axis=1)
+    with torch.no_grad():
+        rlie.eval()
+        val_outputs = rlie(field_ids, candidate_cords, neighbours, neighbour_cords)
+    val_outputs = val_outputs.to('cpu').numpy()
+    out = {cl: np.argmax(val_outputs[np.where(field_idx_candidate == cl)]) for cl in np.unique(field_idx_candidate)}
+    true_candidate_color = (0, 255, 0)
+    output_candidates = {}
+    output_image = image.copy()
+    for idx, (key, value) in enumerate(candidates.items()):
+        if idx in out:
+            candidate_idx = out[idx]
+            cand = candidates[key][candidate_idx]
+            output_candidates[key] = cand['text']
+            cand_coords = [cand['x1'], cand['y1'], cand['x2'], cand['y2']]
+            cv2.rectangle(output_image, (cand_coords[0], cand_coords[1]), (cand_coords[2], cand_coords[3]),
+                          true_candidate_color, 5)
+    if args.visualize:
+        cv2.imshow('Visualize', output_image)
+        cv2.waitKey(0)
+    return output_candidates
 
 
 if __name__ == '__main__':
