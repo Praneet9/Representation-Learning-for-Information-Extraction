@@ -1,7 +1,6 @@
 import torch
-import torch.nn as nn
 from torch.utils import data
-import utils.constants as constants
+from utils import config
 from network.model import Model
 from network import dataset
 from evaluate import evaluate
@@ -15,10 +14,10 @@ def train(model, train_dataloader, val_dataloader, epochs):
 
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     model = model.to(device)
-    writer = SummaryWriter(comment=f"LR_{constants.LR}_BATCH_{constants.BATCH_SIZE}")
+    writer = SummaryWriter(comment=f"LR_{config.LR}_BATCH_{config.BATCH_SIZE}")
     # criterion = nn.BCELoss()
     criterion = FocalLoss(alpha=2, gamma=5)
-    optimizer = torch.optim.Adam(model.parameters(), lr=constants.LR)
+    optimizer = torch.optim.Adam(model.parameters(), lr=config.LR)
 
     train_loss_history = []
     train_accuracy_history = []
@@ -100,18 +99,16 @@ def train(model, train_dataloader, val_dataloader, epochs):
 
 if __name__ == '__main__':
 
-    doc_data = dataset.DocumentsDataset(constants.XMLS, constants.OCR,
-                                        constants.CANDIDATES, constants.OUTPUT_PATH,
-                                        constants.NEIGHBOURS, constants.VOCAB_SIZE)
-    VOCAB_SIZE = len(doc_data.vocab)
-    VAL_DATA_LEN = int(len(doc_data) * constants.VAL_SPLIT)
-    TRAIN_DATA_LEN = len(doc_data) - VAL_DATA_LEN
-    train_set, val_set = data.random_split(doc_data, [TRAIN_DATA_LEN, VAL_DATA_LEN])
+    # split name must equal to split filename eg: for train.txt -> train
+    train_data = dataset.DocumentsDataset(split_name='train')
+    val_data = dataset.DocumentsDataset(split_name='val')
 
-    training_data = data.DataLoader(train_set, batch_size=constants.BATCH_SIZE, shuffle=True)
-    validation_data = data.DataLoader(val_set, batch_size=constants.BATCH_SIZE, shuffle=True)
+    VOCAB_SIZE = len(train_data.vocab)
 
-    rlie = Model(VOCAB_SIZE, constants.EMBEDDING_SIZE, constants.NEIGHBOURS, constants.HEADS)
-    # rlie = torch.load('output/model.pth')
-    history = train(rlie, training_data, validation_data, constants.EPOCHS)
+    training_data = data.DataLoader(train_data, batch_size=config.BATCH_SIZE, shuffle=True)
+    validation_data = data.DataLoader(val_data, batch_size=config.BATCH_SIZE, shuffle=True)
+
+    relie = Model(VOCAB_SIZE, config.EMBEDDING_SIZE, config.NEIGHBOURS, config.HEADS)
+    # relie = torch.load('output/model.pth')
+    history = train(relie, training_data, validation_data, config.EPOCHS)
     print(history)

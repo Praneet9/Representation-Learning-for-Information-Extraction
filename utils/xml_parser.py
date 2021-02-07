@@ -2,15 +2,20 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 import traceback
 from tqdm import tqdm
+from utils import config
 
 
-def get_data(xml_path):
+def get_data(xml_path, split_name='train'):
 
     annotations = []
     classes_count = {}
     class_mapping = {}
 
-    annotation_files = xml_path.glob("*.xml")
+    split_file_path = config.SPLIT_DIR / f"{split_name}.txt"
+    with open(split_file_path, 'r') as f:
+        valid_files = f.read().split("\n")
+    annotation_files = list(xml_path.glob("*.xml"))
+    annotation_files = [an for an in annotation_files if an.stem in valid_files]
     for annot in tqdm(annotation_files, desc="Reading Annotations"):
         try:
             et = ET.parse(annot)
