@@ -1,6 +1,6 @@
 import torch
 import cv2
-from utils import Neighbour, constants, preprocess, extract_candidates, generate_tesseract_results
+from utils import Neighbour, config, preprocess, extract_candidates, generate_tesseract_results
 import pickle
 import traceback
 import numpy as np
@@ -126,7 +126,7 @@ def main():
     candidates = extract_candidates.get_candidates(ocr_results)
     candidates_with_neighbours = attach_neighbour_candidates(width, height, ocr_results, candidates)
     annotation = normalize_coordinates(candidates_with_neighbours, width, height)
-    _data = parse_input(annotation, class_mapping, constants.NEIGHBOURS, vocab)
+    _data = parse_input(annotation, class_mapping, config.NEIGHBOURS, vocab)
     field_ids, candidate_cords, neighbours, neighbour_cords = _data
     rlie = torch.load(args.load_model)
     rlie = rlie.to(device)

@@ -1,8 +1,7 @@
 import torch
-import torch.nn as nn
 from torch.utils import data
-import utils.constants as constants
-from network.model import Model
+from utils import config
+# from network.model import Model
 from network import dataset
 from sklearn.metrics import recall_score
 from focal_loss.focal_loss import FocalLoss
@@ -45,15 +44,14 @@ def evaluate(model, val_dataloader, criterion):
 
 if __name__ == '__main__':
 
-    doc_data = dataset.DocumentsDataset(constants.XMLS, constants.OCR,
-                                        constants.IMAGES, constants.CANDIDATES,
-                                        constants.FIELDS, constants.NEIGHBOURS)
+    doc_data = dataset.DocumentsDataset(split_name='val')
     VOCAB_SIZE = len(doc_data.vocab)
-    test_data = data.DataLoader(doc_data, batch_size=constants.BATCH_SIZE, shuffle=True)
+    test_data = data.DataLoader(doc_data, batch_size=config.BATCH_SIZE, shuffle=True)
 
-    rlie = Model(VOCAB_SIZE, constants.EMBEDDING_SIZE, constants.NEIGHBOURS, constants.HEADS)
+    # rlie = Model(VOCAB_SIZE, config.EMBEDDING_SIZE, config.NEIGHBOURS, config.HEADS)
     # criterion = nn.BCELoss()
+    relie = torch.load('output/model.pth')
     criterion = FocalLoss(alpha=2, gamma=5)
 
-    test_accuracy, test_loss, test_recall = evaluate(rlie, test_data, criterion)
+    test_accuracy, test_loss, test_recall = evaluate(relie, test_data, criterion)
     print(f"Test Accuracy: {test_accuracy} Test Loss: {test_loss} Test Recall: {test_recall}")
