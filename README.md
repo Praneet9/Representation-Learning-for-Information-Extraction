@@ -44,7 +44,7 @@ pip install -r requirements.txt
 ```
 python3 inference.py --image sample.jpg --cuda --cached_pickle output/cached_data.pickle --load_saved_model output/model.pth
 ```
-
+![output](./output.jpg)
 ## Citation
 
 ##### Representation Learning for Information Extraction from Form-like Documents
