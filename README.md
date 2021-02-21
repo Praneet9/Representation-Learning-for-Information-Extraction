@@ -28,8 +28,16 @@ pip install -r requirements.txt
 ```
 ```
 #### STEP 3: Extract Candidates
+Modify the [extract_candidates.py](utils/extract_candidates.py) based on your dataset and classes.
+* Invoice numbers : Use Regular Expressions to extract the candidates for invoice number (Ex. 221233,1041-553337)
+
+* Amounts : Use Regular Expressions to extract the candidates for total amount (Ex. $222.32, $1200.44) 
+* Dates : Use the [dateparser](https://github.com/scrapinghub/dateparser) to extract the candidates for invoice date
 ```
+from dateparser.search import search_dates
+search_dates(all_text)
 ```
+
 #### STEP 4: Define dataset split and update config
 ```
 ```
@@ -38,13 +46,13 @@ pip install -r requirements.txt
 * Run [train.py](train.py)
 
 ## Evaluation
-
+Coming Soon...
 ## Inference
 * Get the inference results by running
 ```
 python3 inference.py --image sample.jpg --cuda --cached_pickle output/cached_data.pickle --load_saved_model output/model.pth
 ```
-
+![output](./assets/images/invoice_vis.jpg)
 ## Citation
 
 ##### Representation Learning for Information Extraction from Form-like Documents
