@@ -1,16 +1,5 @@
 import json
-from stanfordcorenlp import StanfordCoreNLP
 import re
-
-
-host = 'http://localhost'
-port = 9000
-nlp = StanfordCoreNLP(host, port=port, timeout=90000)
-props = {
-    'annotators': 'tokenize,ner',
-    'pipelineLanguage': 'en',
-    'outputFormat': 'json'
-}
 
 
 def get_invoice_nums(all_words):
@@ -75,33 +64,24 @@ def get_dates(all_text,all_words):
 
 def get_amounts(all_words):
     amounts = []
-
+    amount_re = r"\$?([0-9]*,)*[0-9]{3,}(\.[0-9]+)?"
     for word in all_words:
-        formatted_word = word['text'].replace(',', '')
-        annotations = json.loads(nlp.annotate(formatted_word))
-        for x in annotations['sentences']:
-            for y in x['entitymentions']:
-                if y['ner'] == 'MONEY':
-                    amounts.append({
-                        'text': word['text'],
-                        'x1': word['left'],
-                        'y1': word['top'],
-                        'x2': word['left'] + word['width'],
-                        'y2': word['top'] + word['height']
-                    })
-                elif y['ner'] == 'NUMBER':
-                    try:
-                        _ = float(y['text'])
-                        if '.' in word['text']:
-                            amounts.append({
-                                'text': word['text'],
-                                'x1': word['left'],
-                                'y1': word['top'],
-                                'x2': word['left'] + word['width'],
-                                'y2': word['top'] + word['height']
-                            })
-                    except:
-                        continue
+        if not re.search(amount_re, word['text']):
+            continue
+        try:
+            formatted_word = re.sub(r'[$,]','', word['text'])
+            float(formatted_word)
+        
+            amounts.append({
+                'text': word['text'],
+                'x1': word['left'],
+                'y1': word['top'],
+                'x2': word['left'] + word['width'],
+                'y2': word['top'] + word['height']
+            })
+
+        except ValueError:
+            continue
 
     return amounts
 

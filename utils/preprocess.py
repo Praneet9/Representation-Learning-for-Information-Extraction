@@ -1,4 +1,4 @@
-""" Module to for preprocessing methods """
+""" Module for preprocessing methods """
 
 from tqdm import tqdm
 import numpy as np
