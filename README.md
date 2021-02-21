@@ -25,7 +25,15 @@ pip install -r requirements.txt
 ```
 ```
 #### STEP 2: Generate OCRs
+*Prerequisites:*  
+We used `tesseract 4.0` for generating OCR results  
+You can install tesseract from its official source [here](https://github.com/tesseract-ocr/tesseract)  
+Make sure you replace the default model with the LSTM model for best results.  
+Download the LSTM models from [here](https://github.com/tesseract-ocr/tessdata)  
+Once everything is setup, run the command below to generate tesseract results
+which will be saved in the `tesseract_results_lstm` directory.
 ```
+$ python generate_tesseract_results.py
 ```
 #### STEP 3: Extract Candidates
 Modify the [extract_candidates.py](utils/extract_candidates.py) based on your dataset and classes.
