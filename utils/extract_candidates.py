@@ -1,5 +1,5 @@
-import json
 import re
+from dateparser.search import search_dates
 
 
 def get_invoice_nums(all_words):
@@ -23,24 +23,25 @@ def get_invoice_nums(all_words):
     return inv_nums
 
 
-def get_dates(all_text,all_words):
+def get_dates(all_text, all_words):
     dates, all_dates = [], []
     indices = []
-    index = -1
-    annotations = json.loads(nlp.annotate(all_text))
+    matches = search_dates(all_text)
 
-    for x in annotations['sentences']:
-        for y in x['entitymentions']:
-            token_length = len(y['text'].split(' '))
-            if y['ner'] == 'DATE':
-                dates.append(y['text'])
-                index = len(all_text[:y['characterOffsetEnd']].split(' '))
-                if token_length < 2:
-                    indices.append([index - 1])
-                else:
-                    indices.append(list(range(index - token_length, index)))
+    for match in matches:
+        text = match[0]
 
-            index += token_length
+        token_length = len(text.split(' '))
+        idx = all_text.find(match[0])
+        text_len = len(text)
+        index = len(all_text[:idx].strip().split(' '))
+
+        replaced_text = ' '.join(['*'*len(i) for i in text.split(' ')])
+
+        indices.append(list(range(index, index + token_length)))
+
+        index += token_length
+        all_text = all_text[:idx + text_len].replace(text, replaced_text) + all_text[idx + text_len:]
 
     for date_indices in indices:
         date = ''
@@ -85,6 +86,7 @@ def get_amounts(all_words):
 
     return amounts
 
+
 def get_candidates(data):
         all_words = []
         for idx, word in enumerate(data['text']):
@@ -96,6 +98,7 @@ def get_candidates(data):
                     'width': data['width'][idx],
                     'height': data['height'][idx]})
         text = ' '.join([word['text'].strip() for word in all_words])
+
         try:
             invoice_date_candidates = get_dates(text,all_words)
         except Exception as e:
@@ -108,6 +111,7 @@ def get_candidates(data):
             invoice_no_candidates = get_invoice_nums(all_words)
         except Exception as e:
             invoice_no_candidates = []
+
         candidate_data = {
             'invoice_no': invoice_no_candidates,
             'invoice_date': invoice_date_candidates,
