@@ -55,11 +55,19 @@ search_dates(all_text)
 ```
 
 #### STEP 4: Define dataset split and update config
-You can split the dataset using this [utility script](./utils/prepare_split.py).
+**Split dataset into train and validation set**
+
+specify dataset directory and split ratio in [utility script](./utils/prepare_split.py) and run:
+```
+python3 utils/prepare_split.py
+```
+
 Before running the training or evaluation script please modify the [configurations](./utils/config.py) as per your setup.
 
 ## Train
-* Run [train.py](train.py)
+```
+python3 train.py
+```
 
 ## Evaluation
 Coming Soon...

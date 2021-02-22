@@ -1,11 +1,14 @@
 from pathlib import Path
 from random import shuffle
 
-ROOT_DIR = Path.cwd().parent
+ROOT_DIR = Path.cwd()
 SAVE_DIR = ROOT_DIR / 'dataset/split/'
 ANNOTATION_DIR = ROOT_DIR / 'dataset/xmls/'
 
 TRAIN_SPLIT_RATIO = 0.8
+
+if not SAVE_DIR.exists():
+    SAVE_DIR.mkdir(parents=True)
 
 xml_files = [x.stem for x in ANNOTATION_DIR.glob("*.xml")]
 shuffle(xml_files)
