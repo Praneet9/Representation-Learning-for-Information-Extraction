@@ -22,8 +22,16 @@ pip install -r requirements.txt
 ## Prepare dataset
 
 #### STEP 1: Annotation  
-```
-```
+Dataset can be created using an image annotation tool like [labelImg](https://github.com/tzutalin/labelImg) which we have used in this project or any other tool which saves annotations in pascalVOC format in an XML file.
+To identify the true candidate for the required field, a bounding box must be drawn around the word which we want to extract.
+For our experiment, we have annotated the following fields.
+
+* Invoice Number
+* Invoice Date
+* Total Amount
+
+![Annotation Demo](./assets/images/annotation_demo.png)
+
 #### STEP 2: Generate OCRs
 *Prerequisites:*  
 We used `tesseract 4.0` for generating OCR results  
@@ -36,7 +44,7 @@ which will be saved in the `tesseract_results_lstm` directory.
 $ python generate_tesseract_results.py
 ```
 #### STEP 3: Extract Candidates
-Modify the [extract_candidates.py](utils/extract_candidates.py) based on your dataset and classes.
+Modify the [extract_candidates.py](extract_candidates.py) based on your dataset and classes.
 * Invoice numbers : Use Regular Expressions to extract the candidates for invoice number (Ex. 221233,1041-553337)
 
 * Amounts : Use Regular Expressions to extract the candidates for total amount (Ex. $222.32, $1200.44) 
@@ -47,11 +55,19 @@ search_dates(all_text)
 ```
 
 #### STEP 4: Define dataset split and update config
+**Split dataset into train and validation set**
+
+specify dataset directory and split ratio in [utility script](./utils/prepare_split.py) and run:
 ```
+python3 utils/prepare_split.py
 ```
 
+Before running the training or evaluation script please modify the [configurations](./utils/config.py) as per your setup.
+
 ## Train
-* Run [train.py](train.py)
+```
+python3 train.py
+```
 
 ## Evaluation
 Coming Soon...
@@ -60,6 +76,7 @@ Coming Soon...
 ```
 python3 inference.py --image sample.jpg --cuda --cached_pickle output/cached_data.pickle --load_saved_model output/model.pth
 ```
+**You can expect result something like this -** 
 ![output](./assets/images/invoice_vis.jpg)
 ## Citation
 
