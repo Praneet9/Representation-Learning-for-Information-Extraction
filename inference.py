@@ -122,9 +122,9 @@ def main():
     if not os.path.exists(args.image_path):
         raise Exception("Image not found")
     device = torch.device('cuda:0' if args.cuda else 'cpu')
-    image = cv2.imread(args.image_path)
+   
     height, width, _ = image.shape
-    ocr_results = generate_tesseract_results.get_tesseract_results(image)
+    ocr_results = generate_tesseract_results.get_tesseract_results(args.image_path)
     vocab, class_mapping = load_saved_vocab(args.saved_path)
     candidates = extract_candidates.get_candidates(ocr_results)
     candidates_with_neighbours = attach_neighbour_candidates(width, height, ocr_results, candidates)
