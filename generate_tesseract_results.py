@@ -5,7 +5,10 @@ import cv2
 from tqdm import tqdm
 import os
 import json
+from utils import config
+import extract_candidates
 
+candidates_dir=str(config.CANDIDATE_DIR)+'/'
 
 def get_tesseract_results(image_path):
     image = cv2.imread(image_path)
@@ -29,5 +32,8 @@ if __name__ == '__main__':
     for image in tqdm(images[:1], desc='Generating Tesseract Results'):
         image_name = os.path.splitext(os.path.split(image)[-1])[0]
         result = get_tesseract_results(image)
+        candidates=extract_candidates.get_candidates(results)#extract_candidates from ocr results
         with open(os.path.join(tesseract_results, image_name + '.json'), 'w') as f:
             json.dump(result, f)
+        with open(candidates_dir+image_name+'.json','w') as c:
+            json.dump(candidates,c)
