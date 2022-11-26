@@ -1,6 +1,7 @@
 import torch
 import cv2
-from utils import Neighbour, config, preprocess, generate_tesseract_results
+from utils import Neighbour, config, preprocess
+import generate_tesseract_results
 import extract_candidates
 import pickle
 import traceback
